@@ -6,32 +6,31 @@
     <title>Хлопчик чи Дівчинка?</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap');
         
         body {
             font-family: 'Nunito', sans-serif;
-            background-color: #f5f0ea;
+            background-color: #f5f0ea; /* Спокійний бежевий фон */
             color: #5c5346;
             margin: 0;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* Компактно, на одному екрані */
             display: flex;
             flex-direction: column;
             touch-action: manipulation;
-            transition: background-color 0.4s ease;
+            transition: background-color 0.3s ease;
         }
 
         .photo-container {
             position: relative;
             width: 100%;
-            max-width: 280px;
+            max-width: 560px; /* Фото збільшено у 2 рази */
             aspect-ratio: 1 / 1;
             margin: 0 auto;
-            border-radius: 28px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             background-color: #eae1d5;
             overflow: hidden;
-            border: 8px solid white;
         }
 
         .photo-container img {
@@ -50,13 +49,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 7rem;
+            font-size: 8rem;
             opacity: 0;
             transition: opacity 0.2s ease, transform 0.2s ease;
             transform: scale(0.5);
             pointer-events: none;
-            background: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(4px);
         }
 
         .feedback-overlay.show {
@@ -65,178 +62,144 @@
         }
 
         .btn {
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+            transition: transform 0.1s ease, filter 0.2s ease;
         }
         
         .btn:active {
-            transform: translateY(6px);
-            box-shadow: 0 0px 0 rgba(0,0,0,0) !important;
+            transform: scale(0.95);
         }
         
         .bg-soft-blue { background-color: #b3cde0; }
         .bg-soft-pink { background-color: #f4b6c2; }
-        .bg-soft-green { background-color: #b8d8be; }
     </style>
-
-    <!-- ПІДКЛЮЧЕННЯ ОКРЕМОГО ФАЙЛУ ЗІ СПИСКОМ ФОТО -->
-    <!-- Цей рядок завантажує масив fileNames з вашого файлу photos.js -->
-    <script src="photos.js"></script>
 </head>
 <body id="app-body">
 
-    <!-- ЕКРАН ГРИ -->
-    <div id="game-screen" class="flex-1 flex flex-col items-center justify-center p-4 max-w-md mx-auto w-full">
+    <!-- Головний екран гри -->
+    <div id="game-screen" class="flex-1 flex flex-col items-center justify-center p-4 max-w-2xl mx-auto w-full relative">
         
-        <!-- Лічильник питань -->
-        <div class="bg-white/60 px-5 py-2 rounded-full text-sm md:text-base font-extrabold text-gray-500 mb-4 shadow-sm border border-white/50">
-            Питання <span id="current-q" class="text-gray-800 text-lg">1</span> з <span id="max-q">15</span>
+        <!-- Лічильник -->
+        <div id="question-counter" class="text-lg md:text-xl font-bold mb-2 text-[#8c8172]">
+            Питання 1 з 15
         </div>
 
-        <h1 class="text-2xl md:text-3xl font-black mb-6 text-center drop-shadow-sm">Хто на фото?</h1>
+        <h1 class="text-3xl md:text-4xl font-extrabold mb-4 text-center">Хто на фото?</h1>
 
-        <div class="photo-container mb-8">
-            <!-- Індикатор завантаження -->
-            <div id="loader" class="absolute inset-0 flex flex-col items-center justify-center opacity-60">
-                <svg class="animate-spin h-8 w-8 mb-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-            </div>
-            
-            <img id="child-photo" src="" alt="Фото" style="opacity: 0;" class="relative z-10">
-            <div id="feedback" class="feedback-overlay z-20"></div>
+        <!-- Блок з фотографією -->
+        <div class="photo-container mb-6">
+            <img id="child-photo" src="" alt="Фото" style="opacity: 0;">
+            <div id="feedback" class="feedback-overlay"></div>
         </div>
 
-        <div class="flex gap-4 md:gap-6 w-full justify-center px-2">
-            <button onclick="checkAnswer('girl')" class="btn bg-soft-pink text-white flex-1 py-4 rounded-3xl text-xl md:text-2xl font-black shadow-sm flex flex-col items-center gap-1 focus:outline-none select-none">
-                <span class="text-4xl drop-shadow-md">👧</span>
+        <!-- Кнопки вибору -->
+        <div class="flex gap-4 w-full justify-center max-w-[560px]">
+            <button onclick="checkAnswer('girl')" class="btn bg-soft-pink text-white flex-1 py-4 md:py-6 rounded-2xl text-2xl font-bold shadow-sm flex flex-col items-center gap-2">
+                <span class="text-4xl">👧</span>
                 Дівчинка
             </button>
-            <button onclick="checkAnswer('boy')" class="btn bg-soft-blue text-white flex-1 py-4 rounded-3xl text-xl md:text-2xl font-black shadow-sm flex flex-col items-center gap-1 focus:outline-none select-none">
-                <span class="text-4xl drop-shadow-md">👦</span>
+            <button onclick="checkAnswer('boy')" class="btn bg-soft-blue text-white flex-1 py-4 md:py-6 rounded-2xl text-2xl font-bold shadow-sm flex flex-col items-center gap-2">
+                <span class="text-4xl">👦</span>
                 Хлопчик
             </button>
         </div>
     </div>
 
-    <!-- ЕКРАН РЕЗУЛЬТАТІВ -->
-    <div id="result-screen" class="flex-1 flex flex-col items-center justify-center p-4 max-w-md mx-auto w-full hidden text-center">
-        <div class="text-7xl mb-4 drop-shadow-lg animate-bounce">🏆</div>
-        <h1 class="text-3xl md:text-4xl font-black mb-2">Гра завершена!</h1>
-        <p class="text-xl font-bold text-gray-600 mb-8">
-            Правильних відповідей: <br>
-            <span id="final-score" class="text-4xl text-gray-800 block mt-2">0 з 15</span>
-        </p>
+    <!-- Фінальний екран з результатами -->
+    <div id="result-screen" class="flex-1 flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="text-6xl mb-4">🏆</div>
+        <h1 class="text-4xl font-extrabold mb-4">Гру завершено!</h1>
+        <p class="mb-8 text-2xl">Твій результат: <br><span id="score-display" class="text-5xl font-extrabold text-[#8c8172] block mt-4">0 / 15</span></p>
         
-        <button onclick="startGame()" class="btn bg-soft-green text-white w-full max-w-[250px] py-4 rounded-3xl text-2xl font-black shadow-sm focus:outline-none">
-            Грати знову 🔄
+        <button onclick="startGame()" class="btn bg-[#d4c5b0] text-white px-10 py-5 rounded-2xl text-2xl font-bold shadow-sm">
+            🔄 Грати знову
         </button>
     </div>
 
-    <script>
-        // --- ДЕМОНСТРАЦІЙНИЙ МАСИВ ---
-        // Якщо ви ще не створили файл photos.js, гра використає цей запасний список, 
-        // щоб сторінка не ламалася при запуску.
-        if (typeof window.fileNames === 'undefined') {
-            window.fileNames = [
-                // Формат: вік_стать(0-хлопець, 1-дівчина)_раса_дата.jpg
-                "4_0_1_20170113161247843.jpg", // Хлопчик
-                "5_1_0_20170110215712345.jpg", // Дівчинка
-                "3_0_2_20161219140530307.jpg", // Хлопчик
-                "6_1_3_20170119150530307.jpg"  // Дівчинка
-            ];
-            console.warn("Файл photos.js не знайдено. Використовується демо-список.");
-        }
+    <!-- 1. Завантажуємо файл зі списком фотографій -->
+    <script src="photos.js"></script>
 
-        // --- ЛОГІКА ГРИ ---
+    <!-- 2. Логіка гри -->
+    <script>
         const TOTAL_QUESTIONS = 15;
-        let currentQuestion = 1;
+        let currentQuestion = 0;
         let score = 0;
         let currentPhoto = null;
         let isWaiting = false;
-        let usedPhotos = []; // Зберігаємо вже показані фото, щоб не повторювались у межах однієї гри
+        let usedPhotos = []; 
+        let allPhotos = [];
 
-        // Перетворюємо назви файлів у зручний формат
-        const allPhotos = window.fileNames.map(filename => {
-            const parts = filename.split('_');
-            return {
-                url: 'images/' + filename, // Шлях до папки images
-                type: parts[1] === '0' ? 'boy' : 'girl'
-            };
-        });
-
-        // Елементи DOM
         const bodyEl = document.getElementById('app-body');
         const gameScreen = document.getElementById('game-screen');
         const resultScreen = document.getElementById('result-screen');
         const photoEl = document.getElementById('child-photo');
-        const loaderEl = document.getElementById('loader');
         const feedbackEl = document.getElementById('feedback');
-        
-        const qCurrentEl = document.getElementById('current-q');
-        const qMaxEl = document.getElementById('max-q');
-        const finalScoreEl = document.getElementById('final-score');
+        const counterEl = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
 
-        // Встановлюємо максимальну кількість питань у верстку
-        qMaxEl.textContent = TOTAL_QUESTIONS;
+        function initPhotos() {
+            // Перевіряємо, чи успішно завантажився список з photos.js
+            if (typeof window.fileNames === 'undefined') {
+                alert("Не знайдено список фотографій! Перевірте файл photos.js");
+                return [];
+            }
+            
+            return window.fileNames.map(filename => {
+                const parts = filename.split('_');
+                return {
+                    url: 'images/' + filename,
+                    type: parts[1] === '0' ? 'boy' : 'girl'
+                };
+            });
+        }
 
         function startGame() {
-            currentQuestion = 1;
+            allPhotos = initPhotos();
+            if (allPhotos.length === 0) return;
+
+            currentQuestion = 0;
             score = 0;
             usedPhotos = [];
             
-            // Ховаємо екран результатів, показуємо гру
-            resultScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
-            bodyEl.style.backgroundColor = '#f5f0ea';
+            resultScreen.classList.add('hidden');
             
             loadNextPhoto();
         }
 
         function loadNextPhoto() {
-            // Перевіряємо, чи не закінчились питання
-            if (currentQuestion > TOTAL_QUESTIONS) {
-                endGame();
+            if (currentQuestion >= TOTAL_QUESTIONS) {
+                showResults();
                 return;
             }
 
-            // Оновлюємо лічильник
-            qCurrentEl.textContent = currentQuestion;
-
             isWaiting = true;
             photoEl.style.opacity = '0';
-            loaderEl.style.display = 'flex'; // Показуємо лоадер
             
             setTimeout(() => {
-                let nextPhoto;
-                let attempts = 0;
+                // Відфільтровуємо фото, щоб вони не повторювалися в межах однієї гри
+                let availablePhotos = allPhotos.filter(p => !usedPhotos.includes(p.url));
                 
-                // Намагаємось знайти фото, яке ще не показували в цій грі
-                do {
-                    nextPhoto = allPhotos[Math.floor(Math.random() * allPhotos.length)];
-                    attempts++;
-                } while (usedPhotos.includes(nextPhoto.url) && attempts < 50 && allPhotos.length > TOTAL_QUESTIONS);
+                // Якщо унікальні фото закінчилися, скидаємо пам'ять
+                if (availablePhotos.length === 0) {
+                    usedPhotos = [];
+                    availablePhotos = allPhotos;
+                }
+
+                const randomIndex = Math.floor(Math.random() * availablePhotos.length);
+                currentPhoto = availablePhotos[randomIndex];
+                usedPhotos.push(currentPhoto.url);
                 
-                usedPhotos.push(nextPhoto.url);
-                currentPhoto = nextPhoto;
+                currentQuestion++;
+                counterEl.innerText = `Питання ${currentQuestion} з ${TOTAL_QUESTIONS}`;
                 
                 photoEl.src = currentPhoto.url;
                 
                 photoEl.onload = () => {
-                    loaderEl.style.display = 'none'; // Ховаємо лоадер
                     photoEl.style.opacity = '1';
                     isWaiting = false;
-                    
                     feedbackEl.className = 'feedback-overlay';
                     feedbackEl.innerHTML = '';
                     bodyEl.style.backgroundColor = '#f5f0ea'; 
-                };
-
-                // Якщо файл не знайдено (наприклад, помилка у назві), пропускаємо його
-                photoEl.onerror = () => {
-                    console.error("Не вдалося завантажити: " + currentPhoto.url);
-                    loadNextPhoto();
                 };
             }, 300);
         }
@@ -248,34 +211,29 @@
             const isCorrect = (answer === currentPhoto.type);
             
             if (isCorrect) {
-                score++; // Збільшуємо рахунок правильних відповідей
+                score++;
                 feedbackEl.innerHTML = '✅';
-                bodyEl.style.backgroundColor = '#e2ebd8'; // Зелений
+                bodyEl.style.backgroundColor = '#e2ebd8'; // Спокійний зелений
             } else {
                 feedbackEl.innerHTML = '❌';
-                bodyEl.style.backgroundColor = '#fae3e3'; // Червоний
+                bodyEl.style.backgroundColor = '#fae3e3'; // Спокійний червоний
             }
             
             feedbackEl.classList.add('show');
 
-            // Пауза перед наступним питанням
             setTimeout(() => {
-                currentQuestion++;
                 loadNextPhoto();
             }, 1200);
         }
 
-        function endGame() {
+        function showResults() {
             gameScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
-            
-            // Змінюємо фон на святковий
-            bodyEl.style.backgroundColor = '#fff9c4'; // Пастельний жовтий
-            
-            finalScoreEl.textContent = `${score} з ${TOTAL_QUESTIONS}`;
+            bodyEl.style.backgroundColor = '#f5f0ea';
+            scoreDisplay.innerText = `${score} / ${TOTAL_QUESTIONS}`;
         }
 
-        // Запуск гри при завантаженні
+        // Запуск
         window.onload = startGame;
     </script>
 </body>
