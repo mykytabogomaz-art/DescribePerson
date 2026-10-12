@@ -1,317 +1,815 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Шкала віку</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap');
-        body { 
-            font-family: 'Nunito', sans-serif; 
-            background-color: #faf8f5; 
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            justify-content: flex-start; 
-            margin: 0;
-            padding: 1rem;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Скільки тобі тут?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #E7EEEE;
+    --paper: #F8FAF9;
+    --ink: #2C4350;
+    --muted: #667F8C;
+    --line: #CBD9DA;
 
-        .range-wrapper {
-            position: relative;
-            height: 20px;
-            width: 100%;
-        }
+    --handle: #5E9A86;
+    --handle-deep: #2F6E59;
+    --span: #B9D0CC;
 
-        .track-bg {
-            position: absolute;
-            left: 10px; 
-            right: 10px;
-            top: 7px; 
-            height: 6px;
-            background-color: #e8e4db;
-            border-radius: 3px;
-        }
+    --btn: #44705F;
+    --btn-hover: #3A6252;
 
-        .track-fill {
-            position: absolute;
-            height: 100%;
-            background-color: #a3c2b5;
-            border-radius: 3px;
-        }
+    --ok-bg: #DCEBE3;   --ok-ink: #285242;
+    --nope-bg: #F3E8D8; --nope-ink: #6E4F2C;
+    --info-bg: #E3EAEE; --info-ink: #38505E;
+    --bad: #C9A06A;
 
-        .scale-container {
-            position: absolute;
-            left: 0; 
-            right: 0;
-            top: 0;
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none; 
-        }
+    --thumb: 28px;
+    --inset: 14px; /* половина розміру повзунка */
+    --track-h: 40px;
+  }
 
-        .scale-column {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 20px;
-        }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
 
-        .dot-placeholder {
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Nunito", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    font-weight: 500;
+    line-height: 1.4;
+  }
 
-        .scale-tick {
-            width: 2px;
-            height: 8px;
-            background-color: #b5beb9;
-            border-radius: 1px;
-            margin-top: 10px; 
-        }
+  /* Усе вміщується на один екран без прокрутки */
+  .game {
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 10px 16px;
+  }
 
-        .scale-label {
-            margin-top: 10px;
-            writing-mode: vertical-rl; 
-            font-size: 12px;
-            font-weight: 700;
-            color: #8c8172;
-        }
+  .sheet {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: calc(100vh - 20px);
+    height: calc(100dvh - 20px);
+    min-height: 500px;
+    max-height: 720px;
+    background: var(--paper);
+    border-radius: 20px;
+    padding: 14px 20px 16px;
+    box-shadow: 0 10px 30px rgba(44, 67, 80, 0.08);
+  }
 
-        input[type=range] {
-            position: absolute;
-            width: 100%;
-            height: 20px;
-            top: 0;
-            margin: 0;
-            appearance: none;
-            background: transparent;
-            pointer-events: none;
-            outline: none;
-            z-index: 10;
-        }
+  #quiz {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
 
-        input[type=range]::-webkit-slider-thumb {
-            appearance: none;
-            pointer-events: all;
-            width: 20px;
-            height: 20px;
-            background: #ffffff;
-            border: 3px solid #a3c2b5;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        input[type=range]::-moz-range-thumb {
-            pointer-events: all;
-            width: 20px;
-            height: 20px;
-            background: #ffffff;
-            border: 3px solid #a3c2b5;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-    </style>
+  /* Прогрес */
+  .progress {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .progress .bar {
+    flex: 1;
+    height: 6px;
+    background: var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress .fill {
+    height: 100%;
+    width: 0;
+    background: var(--handle);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  h1 {
+    margin: 10px 0 10px;
+    text-align: center;
+    font-size: clamp(1.5rem, 4.4vw, 2.05rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  /* Фото займає весь вільний простір */
+  .photo {
+    flex: 1 1 0;
+    min-height: 110px;
+    display: flex;
+    margin: 0;
+    padding: 8px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(44, 67, 80, 0.12);
+  }
+  .photo-inner {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    background: #DCE5E6;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .photo-inner img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .year-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 2px 12px;
+    background: rgba(248, 250, 249, 0.93);
+    color: var(--ink);
+    font-size: 1.2rem;
+    font-weight: 800;
+    border-radius: 8px;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 2px 8px rgba(44, 67, 80, 0.15);
+  }
+  .missing {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    text-align: center;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  /* Шкала */
+  .timeline { margin-top: 10px; }
+  .slider-wrap {
+    position: relative;
+    height: var(--track-h);
+    --lo: 0;
+    --hi: 1;
+  }
+  .rail, .span {
+    position: absolute;
+    top: 50%;
+    height: 8px;
+    transform: translateY(-50%);
+    border-radius: 4px;
+  }
+  .rail { left: var(--inset); right: var(--inset); background: var(--line); }
+  .span {
+    left: calc(var(--inset) + (100% - var(--thumb)) * var(--lo));
+    width: calc((100% - var(--thumb)) * (var(--hi) - var(--lo)));
+    background: var(--span);
+  }
+  .ticks {
+    position: absolute;
+    left: var(--inset);
+    right: var(--inset);
+    top: 50%;
+    height: 0;
+  }
+  .tick {
+    position: absolute;
+    top: -8px;
+    width: 2px;
+    height: 16px;
+    margin-left: -1px;
+    border-radius: 1px;
+    background: #A9BDC0;
+  }
+
+  .slider-wrap input[type="range"] {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    height: var(--track-h);
+    margin: 0;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    pointer-events: none; /* беремо тільки повзунок */
+  }
+  #sliderA { z-index: 2; }
+  #sliderB { z-index: 3; }
+
+  input[type="range"]::-webkit-slider-runnable-track { height: var(--track-h); background: transparent; border: none; }
+  input[type="range"]::-moz-range-track { height: var(--track-h); background: transparent; border: none; }
+
+  /* Обидва повзунки однакові */
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: var(--thumb);
+    height: var(--thumb);
+    margin-top: calc((var(--track-h) - var(--thumb)) / 2);
+    background: var(--handle);
+    border: 4px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(44, 67, 80, 0.3);
+    pointer-events: auto;
+    cursor: grab;
+  }
+  input[type="range"]::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--thumb);
+    height: var(--thumb);
+    background: var(--handle);
+    border: 4px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(44, 67, 80, 0.3);
+    pointer-events: auto;
+    cursor: grab;
+  }
+  input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
+  input[type="range"]:focus-visible::-webkit-slider-thumb { outline: 3px solid var(--ink); outline-offset: 2px; }
+  input[type="range"]:focus-visible::-moz-range-thumb { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  .labels {
+    position: relative;
+    height: 18px;
+    margin: 0 var(--inset);
+  }
+  .lab {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .lab .short { display: none; }
+  .lab.is-sel { color: var(--handle-deep); font-weight: 800; }
+
+  @media (max-width: 599px) {
+    .game { padding: 8px 10px; }
+    .sheet { padding: 12px 12px 14px; }
+    .lab .full { display: none; }
+    .lab .short { display: inline; }
+  }
+
+  /* Відповідь */
+  .answer { margin-top: 8px; text-align: center; }
+  .sentence {
+    margin: 0 0 10px;
+    font-size: clamp(1.1rem, 3.8vw, 1.5rem);
+    font-weight: 700;
+  }
+  .sentence input,
+  .sentence select {
+    padding: 2px 6px;
+    margin: 0 2px;
+    font: inherit;
+    font-weight: 800;
+    color: var(--ink);
+    text-align: center;
+    background-color: transparent;
+    border: none;
+    border-bottom: 3px solid var(--handle);
+    border-radius: 6px 6px 0 0;
+  }
+  .sentence input { -moz-appearance: textfield; appearance: textfield; }
+  .sentence input::-webkit-outer-spin-button,
+  .sentence input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  #yearInput { width: 5.2ch; }
+  #ageInput { width: 3.6ch; }
+  .sentence select {
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 24px;
+    text-align: left;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%232C4350' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+  }
+  .sentence input:focus,
+  .sentence select:focus { outline: none; background-color: var(--ok-bg); }
+  .sentence input:disabled,
+  .sentence select:disabled { opacity: 1; color: var(--ink); cursor: default; }
+  .sentence .bad { border-bottom-color: var(--bad); background-color: var(--nope-bg); }
+
+  .actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+  .btn {
+    min-height: 44px;
+    padding: 8px 26px;
+    font: inherit;
+    font-weight: 800;
+    font-size: 1rem;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .btn-primary { background: var(--btn); color: #fff; }
+  .btn-primary:hover { background: var(--btn-hover); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { background: var(--info-bg); }
+
+  /* Місце під повідомлення зарезервоване, щоб фото не стрибало */
+  .feedback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    margin: 8px auto 0;
+    max-width: 580px;
+    padding: 6px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+  .feedback.ok { background: var(--ok-bg); color: var(--ok-ink); }
+  .feedback.nope { background: var(--nope-bg); color: var(--nope-ink); }
+  .feedback.info { background: var(--info-bg); color: var(--info-ink); }
+
+  /* Результат / порожній стан */
+  .center { margin: auto 0; text-align: center; padding: 24px 8px; }
+  .center h2 { margin: 0 0 10px; font-size: clamp(1.8rem, 5vw, 2.3rem); font-weight: 800; }
+  .center p { margin: 0 0 22px; font-size: 1.15rem; }
+  /* Результат з колажем */
+  #result {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
+  #result h2 { margin: 6px 0 2px; font-size: clamp(1.6rem, 4.6vw, 2.1rem); font-weight: 800; line-height: 1.15; }
+  .score-line { margin: 0; font-size: 1.1rem; font-weight: 700; }
+  .score-line b { color: var(--handle-deep); font-weight: 800; }
+  .score-note { margin: 2px 0 10px; color: var(--muted); font-size: 0.95rem; font-weight: 700; }
+  #result .btn { align-self: center; margin-top: 12px; flex: none; }
+
+  .collage {
+    flex: 1 1 0;
+    min-height: 0;
+    display: grid;
+    gap: 6px;
+  }
+  .tile {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    background: #DCE5E6;
+    border: 3px solid #fff;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(44, 67, 80, 0.14);
+  }
+  .tile img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .tile span {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    padding: 0 7px;
+    background: rgba(248, 250, 249, 0.93);
+    border-radius: 5px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  code { background: var(--info-bg); padding: 2px 6px; border-radius: 6px; font-size: 0.95em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress .fill, .btn { transition: none; }
+  }
+</style>
 </head>
-<body class="p-2 md:p-6">
+<body>
 
-    <!-- Екран гри -->
-    <div id="game-screen" class="w-full max-w-3xl bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 mt-0 relative block">
-        
-        <!-- Нумерація питань (Формат: 1/15) -->
-        <div id="question-counter" class="absolute top-4 left-6 text-sm md:text-base font-bold text-[#b5beb9]">
-            1/15
+<main class="game">
+  <div class="sheet">
+
+    <!-- Гра -->
+    <section id="quiz" hidden>
+      <div class="progress">
+        <span id="progressText">Питання 1 з 15</span>
+        <div class="bar"><div class="fill" id="barFill"></div></div>
+      </div>
+
+      <h1>Скільки тобі тут?</h1>
+
+      <figure class="photo">
+        <div class="photo-inner">
+          <img id="photo" alt="Фото з сімейного архіву">
+          <div class="missing" id="missing" hidden></div>
+          <figcaption class="year-badge" id="yearBadge">2015</figcaption>
         </div>
+      </figure>
 
-        <h1 class="text-2xl md:text-3xl font-extrabold text-[#7a6f61] text-center mb-4 mt-2">Скільки тобі тут?</h1>
-
-        <div class="relative w-full h-[297px] bg-[#ebe6df] rounded-xl overflow-hidden shadow-inner flex justify-center items-center">
-            <img id="photo-image" src="" alt="Фото" class="max-w-full max-h-full object-contain transition-opacity duration-300 opacity-0" onload="this.classList.remove('opacity-0')">
-            
-            <div id="photo-year-badge" class="absolute top-3 right-3 bg-white/85 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xl font-extrabold text-[#7a6f61] shadow-sm border border-white/50">
-                20??
-            </div>
+      <section class="timeline" aria-label="Шкала років">
+        <div class="slider-wrap" id="sliderWrap">
+          <div class="rail"></div>
+          <div class="span"></div>
+          <div class="ticks" id="ticks"></div>
+          <input type="range" id="sliderA" step="1" aria-label="Перший повзунок">
+          <input type="range" id="sliderB" step="1" aria-label="Другий повзунок">
         </div>
+        <div class="labels" id="labels"></div>
+      </section>
 
-        <div class="range-wrapper mt-4 mb-20" id="slider-widget">
-            <div class="track-bg">
-                <div class="track-fill" id="track-fill"></div>
-            </div>
-
-            <div class="scale-container" id="scale-container"></div>
-
-            <input type="range" id="slider-1" min="2007" max="2026">
-            <input type="range" id="slider-2" min="2007" max="2026">
+      <section class="answer">
+        <p class="sentence">
+          У
+          <input id="yearInput" type="number" inputmode="numeric" min="2000" max="2030" autocomplete="off" aria-label="Рік фото">
+          році мені було
+          <input id="ageInput" type="number" inputmode="numeric" min="0" max="99" autocomplete="off" aria-label="Скільки тобі було">
+          <select id="wordSelect" aria-label="рік, роки чи років">
+            <option value="" selected disabled hidden>…</option>
+            <option value="рік">рік</option>
+            <option value="роки">роки</option>
+            <option value="років">років</option>
+          </select>.
+        </p>
+        <div class="actions">
+          <button class="btn btn-primary" id="checkBtn" type="button">Перевірити</button>
+          <button class="btn btn-ghost" id="revealBtn" type="button" hidden>Показати відповідь</button>
+          <button class="btn btn-primary" id="nextBtn" type="button" hidden>Далі</button>
         </div>
+        <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+      </section>
+    </section>
 
-        <div class="bg-[#f6f2ec] rounded-2xl p-4 md:p-5 text-center border border-[#e8e0d5]">
-            <p class="text-lg md:text-xl font-bold text-[#7a6f61] flex items-center justify-center flex-wrap gap-2 md:gap-3">
-                У 
-                <input type="text" id="year-input" inputmode="numeric" value="" class="w-16 md:w-20 h-10 md:h-12 text-center rounded-xl border border-gray-300 text-lg md:text-xl font-bold outline-none focus:border-[#a3c2b5] shadow-inner text-[#7a6f61]">
-                році мені було 
-                <input type="text" id="age-input" inputmode="numeric" value="" class="w-14 md:w-16 h-10 md:h-12 text-center rounded-xl border border-gray-300 text-lg md:text-xl font-bold outline-none focus:border-[#a3c2b5] shadow-inner text-[#7a6f61]"> 
-                
-                <!-- Вибір слова (без знаку питання) -->
-                <select id="word-select" class="h-10 md:h-12 text-center rounded-xl border border-gray-300 text-lg md:text-xl font-bold outline-none focus:border-[#a3c2b5] shadow-inner text-[#7a6f61] bg-white cursor-pointer px-2">
-                    <option value="" disabled selected></option>
-                    <option value="рік">рік</option>
-                    <option value="роки">роки</option>
-                    <option value="років">років</option>
-                </select>.
-            </p>
-        </div>
+    <!-- Результат -->
+    <section id="result" hidden>
+      <h2>Готово!</h2>
+      <p class="score-line">Правильно з першої спроби: <b id="scoreText">0 з 15</b></p>
+      <p class="score-note" id="scoreNote"></p>
+      <div class="collage" id="collage" aria-label="Колаж з усіх фото гри"></div>
+      <button class="btn btn-primary" id="againBtn" type="button">Зіграти ще раз</button>
+    </section>
 
-        <div class="mt-6 flex justify-center">
-            <button onclick="nextQuestion()" class="bg-[#a3c2b5] text-white font-extrabold text-lg px-10 py-3 rounded-xl shadow-md hover:bg-[#8eb0a3] transition-colors active:scale-95 tracking-wide">
-                Наступне питання
-            </button>
-        </div>
-    </div>
+    <!-- Немає фото -->
+    <section id="empty" class="center" hidden>
+      <h2>Фото ще не додано</h2>
+      <p>Поклади фото в папку <code>images</code> і впиши їхні імена у файл <code>photos.js</code>.<br>
+         Ім’я файла має починатися з року, наприклад <code>2015_море.jpg</code>.</p>
+    </section>
 
-    <!-- Екран результатів -->
-    <div id="result-screen" class="w-full max-w-3xl bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 mt-0 text-center hidden">
-        <h1 class="text-4xl md:text-5xl font-extrabold text-[#7a6f61] mb-6">Молодець! 🎉</h1>
-        
-        <!-- Колаж з усіх 15 фото -->
-        <div id="collage-container" class="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3 mb-8">
-            <!-- Сюди через JS додадуться мініатюри фотографій -->
-        </div>
+  </div>
+</main>
 
-        <button onclick="startGame()" class="bg-[#a3c2b5] text-white font-extrabold text-xl px-12 py-4 rounded-xl shadow-md hover:bg-[#8eb0a3] transition-colors active:scale-95 tracking-wide">
-            Грати знову
-        </button>
-    </div>
+<script src="photos.js"></script>
+<script>
+(function () {
+  'use strict';
 
-    <script src="photos.js"></script>
+  // ---------- Налаштування ----------
+  const CONFIG = {
+    birthYear: 2008,        // рік народження дитини
+    minYear: 2007,          // початок шкали
+    maxYear: 2026,          // кінець шкали
+    questions: 15,          // кількість питань
+    imagesFolder: 'images/' // папка з фото
+  };
 
-    <script>
-        const minYear = 2007;
-        const maxYear = 2026;
-        const TOTAL_QUESTIONS = 15;
-        
-        const scaleContainer = document.getElementById('scale-container');
-        const slider1 = document.getElementById('slider-1');
-        const slider2 = document.getElementById('slider-2');
-        const trackFill = document.getElementById('track-fill');
-        const yearInput = document.getElementById('year-input');
-        const ageInput = document.getElementById('age-input');
-        const wordSelect = document.getElementById('word-select');
-        
-        const photoEl = document.getElementById('photo-image');
-        const yearBadgeEl = document.getElementById('photo-year-badge');
-        const counterEl = document.getElementById('question-counter');
-        
-        const gameScreen = document.getElementById('game-screen');
-        const resultScreen = document.getElementById('result-screen');
-        const collageContainer = document.getElementById('collage-container');
+  // ---------- Елементи ----------
+  const $ = (id) => document.getElementById(id);
+  const quiz = $('quiz'), result = $('result'), empty = $('empty');
+  const photo = $('photo'), missing = $('missing'), yearBadge = $('yearBadge');
+  const progressText = $('progressText'), barFill = $('barFill');
+  const sliderA = $('sliderA'), sliderB = $('sliderB'), sliderWrap = $('sliderWrap');
+  const ticksEl = $('ticks'), labelsEl = $('labels');
+  const yearInput = $('yearInput'), ageInput = $('ageInput'), wordSelect = $('wordSelect');
+  const fields = [yearInput, ageInput, wordSelect];
+  const checkBtn = $('checkBtn'), revealBtn = $('revealBtn'), nextBtn = $('nextBtn');
+  const feedback = $('feedback');
 
-        let allPhotos = [];
-        let usedPhotosInSession = [];
-        let currentPhotoIndex = 0;
-        let currentQuestionNumber = 1;
+  // ---------- Стан ----------
+  let queue = [], index = 0, score = 0, attempts = 0, answered = false;
 
-        // Генерація шкали
-        for (let year = minYear; year <= maxYear; year++) {
-            const column = document.createElement('div');
-            column.className = 'scale-column';
-            column.innerHTML = `
-                <div class="dot-placeholder"><div class="scale-tick"></div></div>
-                <div class="scale-label">${year}</div>
-            `;
-            scaleContainer.appendChild(column);
-        }
+  // ---------- Допоміжні функції ----------
+  function parsePhoto(file) {
+    const m = /^(\d{4})/.exec(String(file).trim());
+    if (!m) { console.warn('Файл без року на початку імені:', file); return null; }
+    const year = parseInt(m[1], 10);
+    if (year < CONFIG.birthYear) { console.warn('Рік фото раніше за рік народження, пропускаю:', file); return null; }
+    if (year > CONFIG.maxYear) console.warn('Рік фото за межами шкали:', file);
+    return { file: String(file).trim(), year: year };
+  }
 
-        function updateSlider() {
-            let val1 = parseInt(slider1.value);
-            let val2 = parseInt(slider2.value);
-            if (val1 > val2) {
-                let tmp = val1; val1 = val2; val2 = tmp;
-            }
-            const percent1 = ((val1 - minYear) / (maxYear - minYear)) * 100;
-            const percent2 = ((val2 - minYear) / (maxYear - minYear)) * 100;
-            trackFill.style.left = percent1 + '%';
-            trackFill.style.right = (100 - percent2) + '%';
-        }
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
 
-        function startGame() {
-            if (typeof window.fileNames !== 'undefined' && window.fileNames.length > 0) {
-                allPhotos = window.fileNames.sort(() => Math.random() - 0.5);
-            } else {
-                console.warn("Файл photos.js порожній.");
-                allPhotos = ["2010_1.jpg"];
-            }
+  // рік / роки / років
+  function yearsWord(n) {
+    const a = Math.abs(n) % 100, b = a % 10;
+    if (a > 10 && a < 20) return 'років';
+    if (b === 1) return 'рік';
+    if (b >= 2 && b <= 4) return 'роки';
+    return 'років';
+  }
 
-            currentPhotoIndex = 0;
-            currentQuestionNumber = 1;
-            usedPhotosInSession = [];
-            
-            gameScreen.classList.remove('hidden');
-            resultScreen.classList.add('hidden');
-            collageContainer.innerHTML = '';
-            
-            loadNextPhoto();
-        }
+  function show(section) {
+    quiz.hidden = section !== quiz;
+    result.hidden = section !== result;
+    empty.hidden = section !== empty;
+  }
 
-        function nextQuestion() {
-            if (currentQuestionNumber >= TOTAL_QUESTIONS) {
-                showResults();
-                return;
-            }
-            currentQuestionNumber++;
-            loadNextPhoto();
-        }
+  function setFeedback(text, kind) {
+    feedback.textContent = text;
+    feedback.className = 'feedback ' + kind;
+  }
+  function clearFeedback() {
+    feedback.textContent = '';
+    feedback.className = 'feedback';
+  }
 
-        function loadNextPhoto() {
-            if (currentPhotoIndex >= allPhotos.length) {
-                currentPhotoIndex = 0; 
-                allPhotos = allPhotos.sort(() => Math.random() - 0.5);
-            }
+  function clearBad() { fields.forEach((f) => f.classList.remove('bad')); }
 
-            const filename = allPhotos[currentPhotoIndex];
-            usedPhotosInSession.push(filename);
-            currentPhotoIndex++;
+  // ---------- Шкала ----------
+  function buildScale() {
+    const range = CONFIG.maxYear - CONFIG.minYear;
+    ticksEl.innerHTML = '';
+    labelsEl.innerHTML = '';
+    for (let y = CONFIG.minYear; y <= CONFIG.maxYear; y++) {
+      const pct = ((y - CONFIG.minYear) / range) * 100;
 
-            counterEl.innerText = `${currentQuestionNumber}/${TOTAL_QUESTIONS}`;
+      const tick = document.createElement('div');
+      tick.className = 'tick';
+      tick.style.left = pct + '%';
+      ticksEl.appendChild(tick);
 
-            photoEl.classList.add('opacity-0');
-            setTimeout(() => {
-                photoEl.src = 'images/' + filename;
-            }, 150);
-            
-            const yearMatch = filename.match(/\d{4}/);
-            yearBadgeEl.innerText = yearMatch ? yearMatch[0] : "20??";
+      const lab = document.createElement('div');
+      lab.className = 'lab';
+      lab.dataset.year = y;
+      lab.style.left = pct + '%';
+      lab.innerHTML = '<span class="full">' + y + '</span><span class="short">’' + String(y).slice(2) + '</span>';
+      labelsEl.appendChild(lab);
+    }
+    [sliderA, sliderB].forEach((s) => { s.min = CONFIG.minYear; s.max = CONFIG.maxYear; });
+  }
 
-            slider1.value = minYear;
-            slider2.value = maxYear;
-            yearInput.value = '';
-            ageInput.value = '';
-            wordSelect.value = ''; 
-            
-            updateSlider();
-        }
+  function updateScale() {
+    const a = +sliderA.value, b = +sliderB.value;
+    const range = CONFIG.maxYear - CONFIG.minYear;
+    sliderWrap.style.setProperty('--lo', (Math.min(a, b) - CONFIG.minYear) / range);
+    sliderWrap.style.setProperty('--hi', (Math.max(a, b) - CONFIG.minYear) / range);
+    labelsEl.querySelectorAll('.lab').forEach((lab) => {
+      const y = +lab.dataset.year;
+      lab.classList.toggle('is-sel', y === a || y === b);
+    });
+  }
 
-        function showResults() {
-            gameScreen.classList.add('hidden');
-            resultScreen.classList.remove('hidden');
-            
-            usedPhotosInSession.forEach(filename => {
-                const img = document.createElement('img');
-                img.src = 'images/' + filename;
-                img.className = 'w-full aspect-square object-cover rounded-lg shadow-sm';
-                collageContainer.appendChild(img);
-            });
-        }
+  function setSliders(a, b) {
+    sliderA.value = a;
+    sliderB.value = Math.min(b, CONFIG.maxYear);
+    updateScale();
+  }
 
-        slider1.addEventListener('input', updateSlider);
-        slider2.addEventListener('input', updateSlider);
-        
-        window.onload = startGame;
-    </script>
+  // Останній зачеплений повзунок завжди зверху
+  function bringToFront(active, other) {
+    active.style.zIndex = 4;
+    other.style.zIndex = 3;
+  }
+
+  // ---------- Гра ----------
+  function startGame() {
+    const list = (typeof PHOTO_FILES !== 'undefined' && Array.isArray(PHOTO_FILES)) ? PHOTO_FILES : [];
+    const photos = list.map(parsePhoto).filter(Boolean);
+    if (photos.length === 0) { show(empty); return; }
+
+    queue = shuffle(photos).slice(0, CONFIG.questions);
+    index = 0;
+    score = 0;
+    show(quiz);
+    showQuestion();
+  }
+
+  function showQuestion() {
+    const q = queue[index];
+    attempts = 0;
+    answered = false;
+
+    progressText.textContent = 'Питання ' + (index + 1) + ' з ' + queue.length;
+    barFill.style.width = (index / queue.length) * 100 + '%';
+
+    missing.hidden = true;
+    photo.hidden = false;
+    photo.onerror = function () {
+      photo.hidden = true;
+      missing.hidden = false;
+      missing.textContent = 'Не знайдено фото: ' + q.file;
+    };
+    photo.src = CONFIG.imagesFolder + encodeURIComponent(q.file);
+    yearBadge.textContent = q.year;
+
+    yearInput.value = '';
+    ageInput.value = '';
+    wordSelect.value = '';
+    fields.forEach((f) => { f.disabled = false; });
+    clearBad();
+
+    setSliders(CONFIG.minYear, CONFIG.maxYear);
+    clearFeedback();
+    checkBtn.hidden = false;
+    revealBtn.hidden = true;
+    nextBtn.hidden = true;
+    nextBtn.textContent = index === queue.length - 1 ? 'Результат' : 'Далі';
+
+    // підвантажуємо наступне фото наперед
+    if (queue[index + 1]) new Image().src = CONFIG.imagesFolder + encodeURIComponent(queue[index + 1].file);
+  }
+
+  function finishQuestion() {
+    answered = true;
+    fields.forEach((f) => { f.disabled = true; });
+    checkBtn.hidden = true;
+    revealBtn.hidden = true;
+    nextBtn.hidden = false;
+    nextBtn.focus();
+  }
+
+  function checkAnswer() {
+    if (answered) return;
+    const q = queue[index];
+    const correctAge = q.year - CONFIG.birthYear;
+
+    const yearRaw = yearInput.value.trim();
+    const ageRaw = ageInput.value.trim();
+    const word = wordSelect.value;
+
+    // Спочатку перевіряємо, що все заповнено
+    if (yearRaw === '') { setFeedback('Впиши рік з фото.', 'info'); yearInput.focus(); return; }
+    if (ageRaw === '')  { setFeedback('Впиши, скільки тобі було років.', 'info'); ageInput.focus(); return; }
+    if (word === '')    { setFeedback('Вибери слово: рік, роки чи років.', 'info'); wordSelect.focus(); return; }
+
+    const yearVal = parseInt(yearRaw, 10);
+    const ageVal = parseInt(ageRaw, 10);
+
+    const yearOk = yearVal === q.year;
+    const ageOk = ageVal === correctAge;
+    const wordOk = word === yearsWord(ageOk ? correctAge : ageVal);
+    // Слово має підходити до правильного числа
+    const wordRight = word === yearsWord(correctAge);
+
+    attempts++;
+    clearBad();
+
+    if (yearOk && ageOk && wordRight) {
+      if (attempts === 1) score++;
+      setFeedback('Правильно! У ' + q.year + ' році мені було ' + correctAge + ' ' + yearsWord(correctAge) + '.', 'ok');
+      finishQuestion();
+      return;
+    }
+
+    const issues = [];
+    if (!yearOk) {
+      yearInput.classList.add('bad');
+      issues.push('Перевір рік — він у куті фото.');
+    }
+    if (!ageOk) {
+      ageInput.classList.add('bad');
+      issues.push((ageVal > correctAge ? 'Трохи забагато.' : 'Трохи замало.') + ' Постав повзунки на два роки й порахуй проміжок між ними.');
+    }
+    if (!wordRight) {
+      // якщо число хибне, слово оцінюємо щодо введеного числа, щоб не підказувати відповідь
+      if (ageOk || !wordOk) {
+        wordSelect.classList.add('bad');
+        issues.push('Перевір слово: рік, роки чи років.');
+      }
+    }
+    if (issues.length === 0) {
+      // число хибне, але слово пасує до нього — підказуємо тільки про число
+      issues.push('Спробуй ще раз.');
+    }
+
+    setFeedback(issues.join(' '), 'nope');
+    if (attempts >= 2) revealBtn.hidden = false;
+  }
+
+  function revealAnswer() {
+    const q = queue[index];
+    const correctAge = q.year - CONFIG.birthYear;
+    clearBad();
+    yearInput.value = q.year;
+    ageInput.value = correctAge;
+    wordSelect.value = yearsWord(correctAge);
+    setSliders(CONFIG.birthYear, q.year);
+    setFeedback('Правильна відповідь: у ' + q.year + ' році мені було ' + correctAge + ' ' + yearsWord(correctAge) + '.', 'info');
+    finishQuestion();
+  }
+
+  function nextQuestion() {
+    index++;
+    if (index >= queue.length) showResult();
+    else showQuestion();
+  }
+
+  function showResult() {
+    const total = queue.length;
+    $('scoreText').textContent = score + ' з ' + total;
+    const ratio = score / total;
+    let note;
+    if (ratio === 1) note = 'Бездоганно! Ти порахував усі фото з першої спроби.';
+    else if (ratio >= 0.7) note = 'Чудовий результат! Ти добре знаєш свої фото.';
+    else if (ratio >= 0.4) note = 'Добре! Ще одна гра — і буде ще краще.';
+    else note = 'Гарна практика! Спробуй ще раз — рахувати стане легше.';
+    $('scoreNote').textContent = note;
+    show(result);
+    renderCollage();
+  }
+
+  // ---------- Колаж ----------
+  const collage = $('collage');
+
+  function renderCollage() {
+    collage.innerHTML = '';
+    queue.forEach((q) => {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      const img = document.createElement('img');
+      img.alt = 'Фото ' + q.year + ' року';
+      img.src = CONFIG.imagesFolder + encodeURIComponent(q.file);
+      const label = document.createElement('span');
+      label.textContent = q.year;
+      tile.appendChild(img);
+      tile.appendChild(label);
+      collage.appendChild(tile);
+    });
+    layoutCollage();
+  }
+
+  // Підбираємо кількість колонок так, щоб плитки були якомога більші
+  function layoutCollage() {
+    if (result.hidden) return;
+    const n = queue.length;
+    const w = collage.clientWidth, h = collage.clientHeight;
+    if (!n || !w || !h) return;
+    let bestCols = 1, bestSize = 0;
+    for (let c = 1; c <= n; c++) {
+      const rows = Math.ceil(n / c);
+      const size = Math.min(w / c, h / rows);
+      if (size > bestSize) { bestSize = size; bestCols = c; }
+    }
+    const rows = Math.ceil(n / bestCols);
+    collage.style.gridTemplateColumns = 'repeat(' + bestCols + ', minmax(0, 1fr))';
+    collage.style.gridTemplateRows = 'repeat(' + rows + ', minmax(0, 1fr))';
+  }
+
+  // ---------- Події ----------
+  sliderA.addEventListener('input', updateScale);
+  sliderB.addEventListener('input', updateScale);
+  sliderA.addEventListener('pointerdown', () => bringToFront(sliderA, sliderB));
+  sliderB.addEventListener('pointerdown', () => bringToFront(sliderB, sliderA));
+  sliderA.addEventListener('focus', () => bringToFront(sliderA, sliderB));
+  sliderB.addEventListener('focus', () => bringToFront(sliderB, sliderA));
+
+  fields.forEach((f) => {
+    f.addEventListener('input', () => f.classList.remove('bad'));
+    f.addEventListener('change', () => f.classList.remove('bad'));
+  });
+  [yearInput, ageInput].forEach((f) => {
+    f.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); checkAnswer(); }
+    });
+  });
+
+  checkBtn.addEventListener('click', checkAnswer);
+  revealBtn.addEventListener('click', revealAnswer);
+  nextBtn.addEventListener('click', nextQuestion);
+  $('againBtn').addEventListener('click', startGame);
+  window.addEventListener('resize', layoutCollage);
+
+  // ---------- Старт ----------
+  buildScale();
+  startGame();
+})();
+</script>
 </body>
 </html>
