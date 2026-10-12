@@ -1,5 +1,5 @@
 // JavaScript source code
- window.fileNames = [
+ const PHOTO_FILES = [
     "2010_1.jpg",
 "2012.jpg",
 "2012_1.jpg",
